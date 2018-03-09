@@ -1,9 +1,9 @@
-# Docker container with Version 5.4 of GPDB running
+# Docker container with the latest version available for ubuntu of GPDB running
 
 ## Build your own container
 
 ```
-docker build -t pivotaldata/gpdb:5.4 ubuntu-16.04
+docker build -t pivotaldata/gpdb:latest ubuntu-16.04
 ```
 
 ## Run the container
