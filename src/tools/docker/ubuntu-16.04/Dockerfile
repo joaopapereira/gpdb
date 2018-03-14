@@ -19,18 +19,18 @@ RUN wget -qO- https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
  && locale-gen en_US.utf8 
 
 # Create GreenPlum data folders and copy/edit configuration to use a single node
-RUN mkdir /gpdata \
- && mkdir /gpdata/gpdata1 \
- && mkdir /gpdata/gpdata2 \
- && mkdir /gpdata/gpmaster \
- && . /opt/gpdb/greenplum_path.sh && cp $GPHOME/docs/cli_help/gpconfigs/gpinitsystem_singlenode /gpdata/ \
- && sed -i 's/gpdata1/gpdata\/gpdata1/g' /gpdata/gpinitsystem_singlenode \
- && sed -i 's/gpdata2/gpdata\/gpdata2/g' /gpdata/gpinitsystem_singlenode \
- && sed -i 's/gpmaster/gpdata\/gpmaster/g' /gpdata/gpinitsystem_singlenode
+RUN mkdir /data \
+ && mkdir /data/data1 \
+ && mkdir /data/data2 \
+ && mkdir /data/master \
+ && . /opt/gpdb/greenplum_path.sh && cp $GPHOME/docs/cli_help/gpconfigs/gpinitsystem_singlenode /data/ \
+ && sed -i 's/gpdata1/data\/data1/g' /data/gpinitsystem_singlenode \
+ && sed -i 's/gpdata2/data\/data2/g' /data/gpinitsystem_singlenode \
+ && sed -i 's/gpmaster/data\/master/g' /data/gpinitsystem_singlenode
 
 # Create gpadmin user and add the user to the sudoers
 RUN useradd -md /home/gpadmin/ gpadmin \
- && chown gpadmin -R /gpdata \
+ && chown gpadmin -R /data \
  && echo "source /opt/gpdb/greenplum_path.sh" > /home/gpadmin/.bash_profile && chown gpadmin:gpadmin /home/gpadmin/.bash_profile \
  && su - gpadmin bash -c 'mkdir /home/gpadmin/.ssh' \
  && echo "gpadmin ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers \
