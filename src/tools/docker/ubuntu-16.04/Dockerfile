@@ -1,4 +1,4 @@
-# currently published as pivotaldata/pgadmin:latest
+# currently published as pivotaldata/gpdb5:latest
 
 FROM ubuntu:16.04
 
