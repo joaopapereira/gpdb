@@ -17,7 +17,9 @@ CREATE TABLE locations(id int PRIMARY KEY, address text);
 CREATE TABLE boxes(id int PRIMARY KEY, apple_id int REFERENCES apples(id), location_id int REFERENCES locations(id));
 
 --- Check Explain Text format output
+-- explain_processing_off
 EXPLAIN SELECT * from boxes LEFT JOIN apples ON apples.id = boxes.apple_id LEFT JOIN locations ON locations.id = boxes.location_id;
+-- explain_processing_on
 
 --- Check Explain Analyze Text output that include the slices information
 -- explain_processing_off
@@ -40,6 +42,8 @@ EXPLAIN (ANALYZE) SELECT * from boxes LEFT JOIN apples ON apples.id = boxes.appl
 -- s/Total Runtime: \d+\.\d+/Total Runtime: ##.###/
 -- m/Segments: \d+\s+/
 -- s/Segments: \d+\s+/Segments: #/
+-- m/PQO version \d+\.\d+\.\d+"\s+/
+-- s/PQO version \d+\.\d+\.\d+"\s+/PQO version ##.##.##"/
 -- end_matchsubs
 -- Check Explain YAML output
 EXPLAIN (FORMAT YAML) SELECT * from boxes LEFT JOIN apples ON apples.id = boxes.apple_id LEFT JOIN locations ON locations.id = boxes.location_id;
@@ -57,8 +61,8 @@ EXPLAIN (ANALYZE, FORMAT YAML) SELECT * from boxes LEFT JOIN apples ON apples.id
 -- s/ Cost": \d+\.\d+,\s+/ Cost": ###.##, /
 -- m/ Rows": \d+, /
 -- s/ Rows": \d+,\s+/ Rows": #####, /
--- m/"Plan Width": \d+, /
--- s/"Plan Width": \d+,\s+/"Plan Width": ##, /
+-- m/"Plan Width": \d+,? /
+-- s/"Plan Width": \d+,?\s+/"Plan Width": ##, /
 -- m/ Time": \d+\.\d+, /
 -- s/ Time": \d+\.\d+,\s+/ Time": ##.###, /
 -- m/Total Runtime": \d+\.\d+,?\s+/
@@ -94,6 +98,8 @@ EXPLAIN (ANALYZE, FORMAT JSON) SELECT * from boxes LEFT JOIN apples ON apples.id
 -- s/Total-Runtime>\d+\.\d+<\/Total-Runtime>\s+/Total-Runtime>##.###<\/Total-Runtime>/
 -- m/Memory-used>\d+<\/Memory-used>\s+/
 -- s/Memory-used>\d+<\/Memory-used>\s+/Memory-used>###<\/Memory-used>/
+-- m/PQO version \d+\.\d+\.\d+/
+-- s/PQO version \d+\.\d+\.\d+/PQO version ##.##.##/
 -- end_matchsubs
 -- explain_processing_off
 -- Check Explain XML output
