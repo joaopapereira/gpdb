@@ -1978,49 +1978,101 @@ gpexplain_formatSlicesOutput(struct CdbExplain_ShowStatCtx *showstatctx,
             slice->numGangMembersToBeActive > 0 &&
             slice->numGangMembersToBeActive != ss->dispatchSummary.nOk)
         {
-            int			nNotDispatched = slice->numGangMembersToBeActive - ds->nResult + ds->nNotDispatched;
+            int nNotDispatched = slice->numGangMembersToBeActive - ds->nResult + ds->nNotDispatched;
 
             es->str->data[flag] = (ss->dispatchSummary.nError > 0) ? 'X' : '_';
+            StringInfoData workersInformationText;
+            initStringInfo(&workersInformationText);
 
-            appendStringInfoString(es->str, "Workers:");
-            if (ds->nError == 1)
+            appendStringInfo(&workersInformationText, "Workers:");
+
+            if (es->format == EXPLAIN_FORMAT_TEXT)
             {
-                appendStringInfo(es->str,
-                                 " %d error;",
-                                 ds->nError);
+                if (ds->nError == 1)
+                {
+                    appendStringInfo(&workersInformationText,
+                                     " %d error;",
+                                     ds->nError);
+                }
+                else if (ds->nError > 1)
+                {
+                    appendStringInfo(&workersInformationText,
+                                     " %d errors;",
+                                     ds->nError);
+                }
             }
-            else if (ds->nError > 1)
+            else
             {
-                appendStringInfo(es->str,
-                                 " %d errors;",
-                                 ds->nError);
+                ExplainOpenGroup("Workers", "Workers", true, es);
+                if (ds->nError > 0)
+                    ExplainPropertyInteger("Errors", ds->nError, es);
             }
+
             if (ds->nCanceled > 0)
             {
-                appendStringInfo(es->str,
-                                 " %d canceled;",
-                                 ds->nCanceled);
+                if (es->format == EXPLAIN_FORMAT_TEXT)
+                {
+                    appendStringInfo(&workersInformationText,
+                                     " %d canceled;",
+                                     ds->nCanceled);
+                }
+                else
+                {
+                    ExplainPropertyInteger("Canceled", ds->nCanceled, es);
+                }
             }
+
             if (nNotDispatched > 0)
             {
-                appendStringInfo(es->str,
-                                 " %d not dispatched;",
-                                 nNotDispatched);
+                if (es->format == EXPLAIN_FORMAT_TEXT)
+                {
+                    appendStringInfo(&workersInformationText,
+                                     " %d not dispatched;",
+                                     nNotDispatched);
+                }
+                else
+                {
+                    ExplainPropertyInteger("Not Dispatched", nNotDispatched, es);
+                }
             }
+
             if (ds->nIgnorableError > 0)
             {
-                appendStringInfo(es->str,
-                                 " %d aborted;",
-                                 ds->nIgnorableError);
+                if (es->format == EXPLAIN_FORMAT_TEXT)
+                {
+                    appendStringInfo(&workersInformationText,
+                                     " %d aborted;",
+                                     ds->nIgnorableError);
+                }
+                else
+                {
+                    ExplainPropertyInteger("Aborted", ds->nIgnorableError, es);
+                }
             }
+
             if (ds->nOk > 0)
             {
-                appendStringInfo(es->str,
-                                 " %d ok;",
-                                 ds->nOk);
+                if (es->format == EXPLAIN_FORMAT_TEXT)
+                {
+                    appendStringInfo(&workersInformationText,
+                                     " %d ok;",
+                                     ds->nOk);
+                }
+                else
+                {
+                    ExplainPropertyInteger("Ok", ds->nOk, es);
+                }
             }
-            es->str->len--;
-            appendStringInfoString(es->str, ".  ");
+
+            if (es->format == EXPLAIN_FORMAT_TEXT)
+            {
+                workersInformationText.len--;
+                ExplainPropertyStringInfo("Workers", es, "%s.  ", workersInformationText.data);
+            }
+            else
+            {
+                ExplainCloseGroup("Workers", "Workers", true, es);
+            }
         }
 
         /* Executor memory high-water mark */
