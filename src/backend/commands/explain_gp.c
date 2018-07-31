@@ -1690,118 +1690,132 @@ cdbexplain_showExecStats(struct PlanState *planstate, ExplainState *es)
 												|| T_DynamicTableScanState == planstate->type
 												|| T_DynamicIndexScanState == planstate->type))
 	{
-		double		nPartTableScanned_avg = cdbexplain_agg_avg(&ns->totalPartTableScanned);
 
-		if (0 == nPartTableScanned_avg)
+		if (es->format == EXPLAIN_FORMAT_TEXT)
 		{
-			bool		displayPartitionScanned = true;
+			double		nPartTableScanned_avg = cdbexplain_agg_avg(&ns->totalPartTableScanned);
 
-			if (T_BitmapTableScanState == planstate->type)
+			if (0 == nPartTableScanned_avg)
 			{
-				ScanState  *scanState = (ScanState *) planstate;
+				bool		displayPartitionScanned = true;
 
-				if (!isDynamicScan(scanState->ps.plan))
+				if (T_BitmapTableScanState == planstate->type)
 				{
-					displayPartitionScanned = false;
+					ScanState  *scanState = (ScanState *) planstate;
+
+					if (!isDynamicScan(scanState->ps.plan))
+					{
+						displayPartitionScanned = false;
+					}
 				}
-			}
 
-			if (displayPartitionScanned)
-			{
-				int			numTotalLeafParts = cdbexplain_countLeafPartTables(planstate);
-
-				appendStringInfoSpaces(es->str, es->indent * 2);
-				appendStringInfo(es->str,
-								 "Partitions scanned:  0 (out of %d).\n",
-								 numTotalLeafParts);
-			}
-		}
-		else
-		{
-			cdbexplain_formatSeg(segbuf, sizeof(segbuf), ns->totalPartTableScanned.imax, ns->ninst);
-			int			numTotalLeafParts = cdbexplain_countLeafPartTables(planstate);
-
-			appendStringInfoSpaces(es->str, es->indent * 2);
-
-			/* only 1 segment scans partitions */
-			if (1 == ns->totalPartTableScanned.vcnt)
-			{
-				/* rescan */
-				if (1 < instr->nloops)
+				if (displayPartitionScanned)
 				{
-					double		totalPartTableScannedPerRescan = ns->totalPartTableScanned.vmax / instr->nloops;
+					int			numTotalLeafParts = cdbexplain_countLeafPartTables(planstate);
 
+					appendStringInfoSpaces(es->str, es->indent * 2);
 					appendStringInfo(es->str,
-									 "Partitions scanned:  %.0f (out of %d) %s of %ld scans.\n",
-									 totalPartTableScannedPerRescan,
-									 numTotalLeafParts,
-									 segbuf,
-									 instr->nloops);
-				}
-				else
-				{
-					appendStringInfo(es->str,
-									 "Partitions scanned:  %.0f (out of %d) %s.\n",
-									 ns->totalPartTableScanned.vmax,
-									 numTotalLeafParts,
-									 segbuf);
+									 "Partitions scanned:  0 (out of %d).\n",
+									 numTotalLeafParts);
 				}
 			}
 			else
 			{
-				/* rescan */
-				if (1 < instr->nloops)
-				{
-					double		totalPartTableScannedPerRescan = nPartTableScanned_avg / instr->nloops;
-					double		maxPartTableScannedPerRescan = ns->totalPartTableScanned.vmax / instr->nloops;
+				cdbexplain_formatSeg(segbuf, sizeof(segbuf), ns->totalPartTableScanned.imax, ns->ninst);
+				int			numTotalLeafParts = cdbexplain_countLeafPartTables(planstate);
 
-					appendStringInfo(es->str,
-									 "Partitions scanned:  Avg %.1f (out of %d) x %d workers of %ld scans."
-									 "  Max %.0f parts%s.\n",
-									 totalPartTableScannedPerRescan,
-									 numTotalLeafParts,
-									 ns->totalPartTableScanned.vcnt,
-									 instr->nloops,
-									 maxPartTableScannedPerRescan,
-									 segbuf
-						);
+				appendStringInfoSpaces(es->str, es->indent * 2);
+
+				/* only 1 segment scans partitions */
+				if (1 == ns->totalPartTableScanned.vcnt)
+				{
+					/* rescan */
+					if (1 < instr->nloops)
+					{
+						double		totalPartTableScannedPerRescan = ns->totalPartTableScanned.vmax / instr->nloops;
+
+						appendStringInfo(es->str,
+										 "Partitions scanned:  %.0f (out of %d) %s of %ld scans.\n",
+										 totalPartTableScannedPerRescan,
+										 numTotalLeafParts,
+										 segbuf,
+										 instr->nloops);
+					}
+					else
+					{
+						appendStringInfo(es->str,
+										 "Partitions scanned:  %.0f (out of %d) %s.\n",
+										 ns->totalPartTableScanned.vmax,
+										 numTotalLeafParts,
+										 segbuf);
+					}
 				}
 				else
 				{
-					appendStringInfo(es->str,
-									 "Partitions scanned:  Avg %.1f (out of %d) x %d workers."
-									 "  Max %.0f parts%s.\n",
-									 nPartTableScanned_avg,
-									 numTotalLeafParts,
-									 ns->totalPartTableScanned.vcnt,
-									 ns->totalPartTableScanned.vmax,
-									 segbuf);
+					/* rescan */
+					if (1 < instr->nloops)
+					{
+						double		totalPartTableScannedPerRescan = nPartTableScanned_avg / instr->nloops;
+						double		maxPartTableScannedPerRescan = ns->totalPartTableScanned.vmax / instr->nloops;
+
+						appendStringInfo(es->str,
+										 "Partitions scanned:  Avg %.1f (out of %d) x %d workers of %ld scans."
+										 "  Max %.0f parts%s.\n",
+										 totalPartTableScannedPerRescan,
+										 numTotalLeafParts,
+										 ns->totalPartTableScanned.vcnt,
+										 instr->nloops,
+										 maxPartTableScannedPerRescan,
+										 segbuf
+							);
+					}
+					else
+					{
+						appendStringInfo(es->str,
+										 "Partitions scanned:  Avg %.1f (out of %d) x %d workers."
+										 "  Max %.0f parts%s.\n",
+										 nPartTableScanned_avg,
+										 numTotalLeafParts,
+										 ns->totalPartTableScanned.vcnt,
+										 ns->totalPartTableScanned.vmax,
+										 segbuf);
+					}
 				}
 			}
 		}
 	}
 
-	/*
-	 * Extra message text. The text is preformatted in the nodeXXX code into
-	 * TEXT format output, it's a GPDB_90_MERGE_FIXME to transform this into
-	 * something that all formats can consume
-	 */
-	if (es->format == EXPLAIN_FORMAT_TEXT)
 	{
+		bool haveExtraText = false;
+		StringInfo extraData = makeStringInfo();
 		for (i = 0; i < ns->ninst; i++)
 		{
 			CdbExplain_StatInst *nsi = &ns->insts[i];
 
 			if (nsi->bnotes < nsi->enotes)
 			{
-				cdbexplain_formatExtraText(es->str,
-										   es->indent,
+				if (!haveExtraText) {
+					ExplainOpenGroup("Extra Text", "Extra Text", false, es);
+					ExplainOpenGroup("Segment", NULL, true, es);
+				}
+				
+				resetStringInfo(extraData);
+
+				cdbexplain_formatExtraText(extraData,
+										   0,
 										   (ns->ninst == 1) ? -1
 										   : ns->segindex0 + i,
 										   ctx->extratextbuf.data + nsi->bnotes,
 										   nsi->enotes - nsi->bnotes);
+				ExplainPropertyStringInfo("Extra Text:", es, extraData->data);
 			}
 		}
+
+		if (haveExtraText) {
+			ExplainCloseGroup("Extra Text", "Extra Text", false, es);
+			ExplainCloseGroup("Segment", NULL, true, es);
+		}
+		pfree(extraData);
 	}
 
 	/*
@@ -1809,44 +1823,48 @@ cdbexplain_showExecStats(struct PlanState *planstate, ExplainState *es)
 	 */
 	if (gp_enable_explain_allstat && ns->segindex0 >= 0 && ns->ninst > 0)
 	{
-		/*
-		 * create a header for all stats: separate each individual stat by an
-		 * underscore, separate the grouped stats for each node by a slash
-		 */
-		appendStringInfoSpaces(es->str, es->indent * 2);
-		appendStringInfoString(es->str,
-							   "allstat: "
 
-		/*
-		 *
-		 * "seg_starttime_firststart_counter_firsttuple_startup_total_ntuples_n
-		 * loops"
-		 */
-							   "seg_firststart_total_ntuples");
-
-		for (i = 0; i < ns->ninst; i++)
+		if (es->format == EXPLAIN_FORMAT_TEXT)
 		{
-			CdbExplain_StatInst *nsi = &ns->insts[i];
+			/*
+			 * create a header for all stats: separate each individual stat by an
+			 * underscore, separate the grouped stats for each node by a slash
+			 */
+			appendStringInfoSpaces(es->str, es->indent * 2);
+			appendStringInfoString(es->str,
+								   "allstat: "
 
-			if (INSTR_TIME_IS_ZERO(nsi->firststart))
+			/*
+			 *
+			 * "seg_starttime_firststart_counter_firsttuple_startup_total_ntuples_n
+			 * loops"
+			 */
+								   "seg_firststart_total_ntuples");
+
+			for (i = 0; i < ns->ninst; i++)
 			{
-				continue;
+				CdbExplain_StatInst *nsi = &ns->insts[i];
+
+				if (INSTR_TIME_IS_ZERO(nsi->firststart))
+				{
+					continue;
+				}
+
+				/* Time from start of query on qDisp to worker's first result row */
+				INSTR_TIME_SET_ZERO(timediff);
+				INSTR_TIME_ACCUM_DIFF(timediff, nsi->firststart, ctx->querystarttime);
+				cdbexplain_formatSeconds(startbuf, sizeof(startbuf), INSTR_TIME_GET_DOUBLE(timediff));
+				cdbexplain_formatSeconds(totalbuf, sizeof(totalbuf), nsi->total);
+
+				appendStringInfo(es->str,
+								 "/seg%d_%s_%s_%.0f",
+								 ns->segindex0 + i,
+								 startbuf,
+								 totalbuf,
+								 nsi->ntuples);
 			}
-
-			/* Time from start of query on qDisp to worker's first result row */
-			INSTR_TIME_SET_ZERO(timediff);
-			INSTR_TIME_ACCUM_DIFF(timediff, nsi->firststart, ctx->querystarttime);
-			cdbexplain_formatSeconds(startbuf, sizeof(startbuf), INSTR_TIME_GET_DOUBLE(timediff));
-			cdbexplain_formatSeconds(totalbuf, sizeof(totalbuf), nsi->total);
-
-			appendStringInfo(es->str,
-							 "/seg%d_%s_%s_%.0f",
-							 ns->segindex0 + i,
-							 startbuf,
-							 totalbuf,
-							 nsi->ntuples);
+			appendStringInfoString(es->str, "//end\n");
 		}
-		appendStringInfoString(es->str, "//end\n");
 	}
 }								/* cdbexplain_showExecStats */
 
@@ -1870,12 +1888,6 @@ cdbexplain_showExecStatsEnd(struct PlannedStmt *stmt,
 							struct EState *estate,
 							ExplainState *es)
 {
-	/*
-	 * Summary by slice
-	 *
-	 * GPDB_90_MERGE_FIXME: Refactor the Slice statistics printing such that
-	 * we can use it in non-TEXT format output.
-	 */
     gpexplain_formatSlicesOutput(showstatctx, estate, es);
 
 	if (!IsResManagerMemoryPolicyNone())
