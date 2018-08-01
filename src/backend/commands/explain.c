@@ -538,8 +538,8 @@ ExplainOnePlan(PlannedStmt *plannedstmt, IntoClause *into, ExplainState *es,
     if (es->analyze)
     {
         /* Attach workarea to QueryDesc so ExecSetParamPlan() can find it. */
-        queryDesc->showstatctx = cdbexplain_showExecStatsBegin(queryDesc,
-															   starttime);
+        queryDesc->showstatctx = gpexplain_showExecStatsBegin(queryDesc,
+															  starttime);
     }
 	else
 		queryDesc->showstatctx = NULL;
@@ -627,8 +627,8 @@ ExplainOnePlan(PlannedStmt *plannedstmt, IntoClause *into, ExplainState *es,
      * Display per-slice and whole-query statistics.
      */
     if (es->analyze)
-        cdbexplain_showExecStatsEnd(queryDesc->plannedstmt, queryDesc->showstatctx,
-									queryDesc->estate, es);
+        gpexplain_showExecStatsEnd(queryDesc->plannedstmt, queryDesc->showstatctx,
+                                   queryDesc->estate, es);
 
     /*
 	 * Show non-default GUC settings that might have affected the plan as well
@@ -714,14 +714,14 @@ ExplainPrintPlan(ExplainState *es, QueryDesc *queryDesc)
 	if (es->analyze)
 	{
 		if (!es->currentSlice || sliceRunsOnQD(es->currentSlice))
-			cdbexplain_localExecStats(queryDesc->planstate, es->showstatctx);
+			gpexplain_localExecStats(queryDesc->planstate, es->showstatctx);
 
         /* Fill in the plan's Instrumentation with stats from qExecs. */
         if (estate->dispatcherState && estate->dispatcherState->primaryResults)
-            cdbexplain_recvExecStats(queryDesc->planstate,
-                                     estate->dispatcherState->primaryResults,
-                                     LocallyExecutingSliceIndex(estate),
-                                     es->showstatctx);
+			gpexplain_recvExecStats(queryDesc->planstate,
+									estate->dispatcherState->primaryResults,
+									LocallyExecutingSliceIndex(estate),
+									es->showstatctx);
 	}
 
 	ExplainNode(queryDesc->planstate, NIL, NULL, NULL, es);
@@ -1799,7 +1799,7 @@ ExplainNode(PlanState *planstate, List *ancestors,
 
     /* Show executor statistics */
 	if (planstate->instrument && planstate->instrument->need_cdb)
-		cdbexplain_showExecStats(planstate, es);
+		gpexplain_showExecStats(planstate, es);
 
 	/* Show buffer usage */
 	if (es->buffers)
@@ -2156,7 +2156,7 @@ show_sort_keys(SortState *sortstate, List *ancestors, ExplainState *es)
 static void
 show_sort_info(SortState *sortstate, ExplainState *es)
 {
-	CdbExplain_NodeSummary *ns;
+	GPExplain_NodeSummary *ns;
 	int			i;
 
 	if (!es->analyze)

@@ -20,7 +20,7 @@
 #include "utils/resowner.h"
 #include "storage/s_lock.h"
 
-struct CdbExplain_NodeSummary;          /* private def in cdb/cdbexplain.c */
+struct GPExplain_NodeSummary;          /* private def in cdb/cdbexplain.c */
 
 typedef struct BufferUsage
 {
@@ -81,7 +81,7 @@ typedef struct Instrumentation
 	const char *sortMethod;		/* CDB: Type of sort */
 	const char *sortSpaceType;	/* CDB: Sort space type (Memory / Disk) */
 	long		sortSpaceUsed;	/* CDB: Memory / Disk used by sort(KBytes) */
-	struct CdbExplain_NodeSummary *cdbNodeSummary;	/* stats from all qExecs */
+	struct GPExplain_NodeSummary *cdbNodeSummary;	/* stats from all qExecs */
 } Instrumentation;
 
 extern PGDLLIMPORT BufferUsage pgBufferUsage;

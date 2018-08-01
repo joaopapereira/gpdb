@@ -10,8 +10,8 @@
  * from explain.c. Since the mocker.py utility has trouble mocking this
  * structure, we include the relevant functions we need here instead.
  */
-void cdbexplain_localExecStats(struct PlanState *planstate,
-						  struct CdbExplain_ShowStatCtx *showstatctx)
+void gpexplain_localExecStats(struct PlanState *planstate,
+                              struct GPExplain_ShowStatCtx *showstatctx)
 {
 	check_expected(planstate);
 	check_expected(showstatctx);
@@ -19,10 +19,10 @@ void cdbexplain_localExecStats(struct PlanState *planstate,
 }
 
 void
-cdbexplain_recvExecStats(struct PlanState *planstate,
-						 struct CdbDispatchResults *dispatchResults,
-						 int sliceIndex,
-						 struct CdbExplain_ShowStatCtx *showstatctx)
+gpexplain_recvExecStats(struct PlanState *planstate,
+						struct CdbDispatchResults *dispatchResults,
+						int sliceIndex,
+						struct GPExplain_ShowStatCtx *showstatctx)
 {
 	check_expected(planstate);
 	check_expected(dispatchResults);
@@ -32,7 +32,7 @@ cdbexplain_recvExecStats(struct PlanState *planstate,
 }
 
 void
-cdbexplain_sendExecStats(QueryDesc *queryDesc)
+gpexplain_sendExecStats(QueryDesc *queryDesc)
 {
 	mock();
 }
@@ -99,9 +99,9 @@ test__ExecSetParamPlan__Check_Dispatch_Results(void **state)
 	/* Force SetupInterconnect to fail */
 	will_be_called_with_sideeffect(SetupInterconnect, &setupinterconnect_fail, NULL);
 
-	expect_any(cdbexplain_localExecStats,planstate);
-	expect_any(cdbexplain_localExecStats,showstatctx);
-	will_be_called(cdbexplain_localExecStats);
+	expect_any(gpexplain_localExecStats,planstate);
+	expect_any(gpexplain_localExecStats,showstatctx);
+	will_be_called(gpexplain_localExecStats);
 
 	expect_any(cdbdisp_cancelDispatch,ds);
 	will_be_called(cdbdisp_cancelDispatch);
@@ -109,11 +109,11 @@ test__ExecSetParamPlan__Check_Dispatch_Results(void **state)
 	expect_any(CdbDispatchHandleError, ds);
 	will_be_called(CdbDispatchHandleError);
 
-	expect_any(cdbexplain_recvExecStats,planstate);
-	expect_any(cdbexplain_recvExecStats,dispatchResults);
-	expect_any(cdbexplain_recvExecStats,sliceIndex);
-	expect_any(cdbexplain_recvExecStats,showstatctx);
-	will_be_called(cdbexplain_recvExecStats);
+	expect_any(gpexplain_recvExecStats,planstate);
+	expect_any(gpexplain_recvExecStats,dispatchResults);
+	expect_any(gpexplain_recvExecStats,sliceIndex);
+	expect_any(gpexplain_recvExecStats,showstatctx);
+	will_be_called(gpexplain_recvExecStats);
 
 	/* Catch PG_RE_THROW(); after cleaning with CdbCheckDispatchResult */
 	PG_TRY();

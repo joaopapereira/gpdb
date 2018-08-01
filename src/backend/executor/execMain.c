@@ -93,7 +93,7 @@
 #include "cdb/cdbaocsam.h"
 #include "cdb/cdbdisp_query.h"
 #include "cdb/cdbdispatchresult.h"
-#include "cdb/cdbexplain.h"             /* cdbexplain_sendExecStats() */
+#include "cdb/cdbexplain.h"             /* gpexplain_sendExecStats() */
 #include "cdb/cdbplan.h"
 #include "cdb/cdbsrlz.h"
 #include "cdb/cdbsubplan.h"
@@ -1004,7 +1004,7 @@ standard_ExecutorRun(QueryDesc *queryDesc,
         {
             PG_TRY();
             {
-                cdbexplain_sendExecStats(queryDesc);
+                gpexplain_sendExecStats(queryDesc);
             }
             PG_CATCH();
             {
@@ -1203,7 +1203,7 @@ standard_ExecutorEnd(QueryDesc *queryDesc)
         estate->es_sliceTable->instrument_options &&
         (estate->es_sliceTable->instrument_options & INSTRUMENT_CDB) &&
         Gp_role == GP_ROLE_EXECUTE)
-        cdbexplain_sendExecStats(queryDesc);
+        gpexplain_sendExecStats(queryDesc);
 
 	/*
 	 * if needed, collect mpp dispatch results and tear down

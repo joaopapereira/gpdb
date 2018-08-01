@@ -41,7 +41,7 @@ typedef struct ExplainState
 	List	   *grouping_stack; /* format-specific grouping state */
 
     /* CDB */
-    struct CdbExplain_ShowStatCtx  *showstatctx;    /* EXPLAIN ANALYZE info */
+    struct GPExplain_ShowStatCtx  *showstatctx;    /* EXPLAIN ANALYZE info */
     Slice          *currentSlice;   /* slice whose nodes we are visiting */
 
 	PlanState  *parentPlanState;
