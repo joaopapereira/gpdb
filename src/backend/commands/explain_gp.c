@@ -1797,6 +1797,7 @@ cdbexplain_showExecStats(struct PlanState *planstate, ExplainState *es)
 				if (!haveExtraText) {
 					ExplainOpenGroup("Extra Text", "Extra Text", false, es);
 					ExplainOpenGroup("Segment", NULL, true, es);
+					haveExtraText = true;
 				}
 				
 				resetStringInfo(extraData);
@@ -1807,7 +1808,7 @@ cdbexplain_showExecStats(struct PlanState *planstate, ExplainState *es)
 										   : ns->segindex0 + i,
 										   ctx->extratextbuf.data + nsi->bnotes,
 										   nsi->enotes - nsi->bnotes);
-				ExplainPropertyStringInfo("Extra Text:", es, extraData->data);
+				ExplainPropertyStringInfo("Extra Text", es, extraData->data);
 			}
 		}
 
