@@ -124,6 +124,8 @@ EXPLAIN (ANALYZE) SELECT * from boxes LEFT JOIN apples ON apples.id = boxes.appl
 -- s/Average: \d+\s+/Average: ## /
 -- m/Total memory used across slices: \d+/
 -- s/Total memory used across slices: \d+\s*/Total memory used across slices: ###/
+-- m/Memory used: \d+/
+-- s/Memory used: \d+\s+/Memory used: ###/
 -- m/ORCA Memory Used \w+: \d+/
 -- s/ORCA Memory Used (\w+): \d+\s+/ORCA Memory Used $1: ##/
 -- end_matchsubs
@@ -458,7 +460,7 @@ EXPLAIN (ANALYZE, FORMAT YAML) SELECT * from boxes LEFT JOIN apples ON apples.id
          Maximum Memory Used: 59000                      +
    Total memory used across slices: 13211                 +
    Statement statistics:                                  +
-     Memory used: 128000                                  +
+     Memory used: 1200                                  +
      ORCA Memory Used Peak: 14                            +
      ORCA Memory Used Allocated: 13                       +
      ORCA Memory Used Freed: 12                           +
@@ -918,7 +920,7 @@ EXPLAIN (ANALYZE, FORMAT JSON) SELECT * from boxes LEFT JOIN apples ON apples.id
      ],                                                        +
      "Total memory used across slices": 13213,                 +
      "Statement statistics": {                                 +
-       "Memory used": 12800                                    +
+       "Memory used": 1800                                    +
        "ORCA Memory Used Peak": 12423,                         +
        "ORCA Memory Used Allocated": 12312,                    +
        "ORCA Memory Used Freed": 15                            +

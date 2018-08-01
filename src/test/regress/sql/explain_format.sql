@@ -78,6 +78,8 @@ EXPLAIN (ANALYZE) SELECT * from boxes LEFT JOIN apples ON apples.id = boxes.appl
 -- s/Average: \d+\s+/Average: ## /
 -- m/Total memory used across slices: \d+/
 -- s/Total memory used across slices: \d+\s*/Total memory used across slices: ###/
+-- m/Memory used: \d+/
+-- s/Memory used: \d+\s+/Memory used: ###/
 -- m/ORCA Memory Used \w+: \d+/
 -- s/ORCA Memory Used (\w+): \d+\s+/ORCA Memory Used $1: ##/
 -- end_matchsubs
