@@ -30,7 +30,7 @@
 #include "utils/lsyscache.h"
 #include "utils/memutils.h"
 #include "access/heapam.h"
-#include "cdb/cdbexplain.h"             /* cdbexplain_recvExecStats */
+#include "cdb/cdbexplain.h"             /* gpexplain_recvExecStats */
 #include "cdb/cdbvars.h"
 #include "cdb/cdbdisp.h"
 #include "cdb/cdbdisp_query.h"
@@ -1166,9 +1166,9 @@ PG_TRY();
 		{
 			/* Jam stats into subplan's Instrumentation nodes. */
 			explainRecvStats = true;
-			cdbexplain_recvExecStats(planstate, ds->primaryResults,
-									 LocallyExecutingSliceIndex(queryDesc->estate),
-									 econtext->ecxt_estate->showstatctx);
+			gpexplain_recvExecStats(planstate, ds->primaryResults,
+									LocallyExecutingSliceIndex(queryDesc->estate),
+									econtext->ecxt_estate->showstatctx);
 		}
 
 		/* Main plan use same estate, must reset dispatcherState  */
@@ -1190,7 +1190,7 @@ PG_CATCH();
 	/* If EXPLAIN ANALYZE, collect local and distributed execution stats. */
 	if (planstate->instrument && planstate->instrument->need_cdb)
 	{
-		cdbexplain_localExecStats(planstate, econtext->ecxt_estate->showstatctx);
+        gpexplain_localExecStats(planstate, econtext->ecxt_estate->showstatctx);
 		if (!explainRecvStats &&
 			shouldDispatch &&
 			queryDesc->estate->dispatcherState)
@@ -1198,10 +1198,10 @@ PG_CATCH();
 			/* Wait for all gangs to finish.  Cancel slowpokes. */
 			cdbdisp_cancelDispatch(queryDesc->estate->dispatcherState);
 
-			cdbexplain_recvExecStats(planstate,
-									 queryDesc->estate->dispatcherState->primaryResults,
-									 LocallyExecutingSliceIndex(queryDesc->estate),
-									 econtext->ecxt_estate->showstatctx);
+			gpexplain_recvExecStats(planstate,
+									queryDesc->estate->dispatcherState->primaryResults,
+									LocallyExecutingSliceIndex(queryDesc->estate),
+									econtext->ecxt_estate->showstatctx);
 		}
 	}
 
@@ -1240,7 +1240,7 @@ PG_END_TRY();
 
 	/* If EXPLAIN ANALYZE, collect local execution stats. */
 	if (planstate->instrument && planstate->instrument->need_cdb)
-		cdbexplain_localExecStats(planstate, econtext->ecxt_estate->showstatctx);
+        gpexplain_localExecStats(planstate, econtext->ecxt_estate->showstatctx);
 
 	/* Restore memory high-water mark for root slice of main query. */
 	MemoryContextSetPeakSpace(planstate->state->es_query_cxt, savepeakspace);

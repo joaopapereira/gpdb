@@ -21,7 +21,7 @@
 #include "tcop/dest.h"
 #include "gpmon/gpmon.h"
 
-struct CdbExplain_ShowStatCtx;  /* private, in "cdb/cdbexplain.c" */
+struct GPExplain_ShowStatCtx;  /* private, in "cdb/cdbexplain.c" */
 
 
 /* GangType enumeration is used in several structures related to CDB
@@ -257,7 +257,7 @@ typedef struct QueryDesc
 	QueryDispatchDesc *ddesc;
 
 	/* CDB: EXPLAIN ANALYZE statistics */
-	struct CdbExplain_ShowStatCtx  *showstatctx;
+	struct GPExplain_ShowStatCtx  *showstatctx;
 
 	/* Gpmon */
 	gpmon_packet_t *gpmon_pkt;

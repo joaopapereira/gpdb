@@ -24,7 +24,7 @@ struct PlanState;                       /* #include "nodes/execnodes.h" */
 struct QueryDesc;                       /* #include "executor/execdesc.h" */
 struct StringInfoData;                  /* #include "lib/stringinfo.h" */
 
-struct CdbExplain_ShowStatCtx;          /* private, in "cdb/cdbexplain.c" */
+struct GPExplain_ShowStatCtx;          /* private, in "cdb/cdbexplain.c" */
 struct PlannedStmt;
 
 static inline void
@@ -64,61 +64,61 @@ cdbexplain_agg_avg(CdbExplain_Agg *agg)
 
 
 /*
- * cdbexplain_localExecStats
+ * gpexplain_localExecStats
  *    Called by qDisp to build NodeSummary and SliceSummary blocks
  *    containing EXPLAIN ANALYZE statistics for a root slice that
  *    has been executed locally in the qDisp process.  Attaches these
  *    structures to the PlanState nodes' Instrumentation objects for
- *    later use by cdbexplain_showExecStats().
+ *    later use by gpexplain_showExecStats().
  *
  * 'planstate' is the top PlanState node of the slice.
- * 'showstatctx' is a CdbExplain_ShowStatCtx object which was created by
- *      calling cdbexplain_showExecStatsBegin().
+ * 'showstatctx' is a GPExplain_ShowStatCtx object which was created by
+ *      calling gpexplain_showExecStatsBegin().
  */
 void
-cdbexplain_localExecStats(struct PlanState                 *planstate,
-                          struct CdbExplain_ShowStatCtx    *showstatctx);
+gpexplain_localExecStats(struct PlanState *planstate,
+                         struct GPExplain_ShowStatCtx *showstatctx);
 
 /*
- * cdbexplain_sendExecStats
+ * gpexplain_sendExecStats
  *    Called by qExec process to send EXPLAIN ANALYZE statistics to qDisp.
  *    On the qDisp, libpq will attach this data to the PGresult object.
  */
 void
-cdbexplain_sendExecStats(struct QueryDesc *queryDesc);
+gpexplain_sendExecStats(struct QueryDesc *queryDesc);
 
 /*
- * cdbexplain_recvExecStats
+ * gpexplain_recvExecStats
  *    Called by qDisp to transfer a slice's EXPLAIN ANALYZE statistics
  *    from the CdbDispatchResults structures to the PlanState tree.
  *    Recursively does the same for slices that are descendants of the
  *    one specified.
  *
- * 'showstatctx' is a CdbExplain_ShowStatCtx object which was created by
- *      calling cdbexplain_showExecStatsBegin().
+ * 'showstatctx' is a GPExplain_ShowStatCtx object which was created by
+ *      calling gpexplain_showExecStatsBegin().
  */
 void
-cdbexplain_recvExecStats(struct PlanState              *planstate,
-                         struct CdbDispatchResults     *dispatchResults,
-                         int                            sliceIndex,
-                         struct CdbExplain_ShowStatCtx *showstatctx);
+gpexplain_recvExecStats(struct PlanState *planstate,
+                        struct CdbDispatchResults *dispatchResults,
+                        int sliceIndex,
+                        struct GPExplain_ShowStatCtx *showstatctx);
 
 /*
- * cdbexplain_showExecStatsBegin
- *    Called by qDisp process to create a CdbExplain_ShowStatCtx structure
+ * gpexplain_showExecStatsBegin
+ *    Called by qDisp process to create a GPExplain_ShowStatCtx structure
  *    in which to accumulate overall statistics for a query.
  *
  * 'explaincxt' is a MemoryContext from which to allocate the ShowStatCtx as
  *      well as any needed buffers and the like.  The explaincxt ptr is saved
  *      in the ShowStatCtx.  The caller is expected to reset or destroy the
- *      explaincxt not too long after calling cdbexplain_showExecStatsEnd(); so
+ *      explaincxt not too long after calling gpexplain_showExecStatsEnd(); so
  *      we don't bother to pfree() memory that we allocate from this context.
  * 'querystarttime' is the timestamp of the start of the query, in a
  *      platform-dependent format.
  */
-struct CdbExplain_ShowStatCtx *
-cdbexplain_showExecStatsBegin(struct QueryDesc *queryDesc,
-                              instr_time        querystarttime);
+struct GPExplain_ShowStatCtx *
+gpexplain_showExecStatsBegin(struct QueryDesc *queryDesc,
+                             instr_time querystarttime);
 
 
 

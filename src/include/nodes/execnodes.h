@@ -33,7 +33,7 @@
  */
 #define InvalidPartitionSelectorId  0
 
-struct CdbExplain_ShowStatCtx;          /* private, in "cdb/cdbexplain.c" */
+struct GPExplain_ShowStatCtx;          /* private, in "cdb/cdbexplain.c" */
 struct ChunkTransportState;             /* #include "cdb/cdbinterconnect.h" */
 struct StringInfoData;                  /* #include "lib/stringinfo.h" */
 struct MemTupleBinding;
@@ -637,7 +637,7 @@ typedef struct EState
 	struct CdbDispatcherState *dispatcherState;
 
 	/* CDB: EXPLAIN ANALYZE statistics */
-	struct CdbExplain_ShowStatCtx  *showstatctx;
+	struct GPExplain_ShowStatCtx  *showstatctx;
 
 	/* CDB: partitioning state info */
 	PartitionState *es_partition_state;
