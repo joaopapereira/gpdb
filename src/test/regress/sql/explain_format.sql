@@ -126,7 +126,7 @@ EXPLAIN (ANALYZE, FORMAT YAML) SELECT * from boxes LEFT JOIN apples ON apples.id
 -- m/"Average": \d+,\s+/
 -- s/"Average": \d+,\s+/"Average": ##, /
 -- m/"Total memory used across slices": \d+,/
--- s/"Total memory used across slices": \d+,/"Total memory used across slices": ###,/
+-- s/"Total memory used across slices": \d+,\s*/"Total memory used across slices": ###,/
 -- m/"ORCA Memory Used \w+": \d+,?/
 -- s/"ORCA Memory Used (\w+)": \d+,?\s+/"ORCA Memory Used $1": ##/
 -- end_matchsubs
