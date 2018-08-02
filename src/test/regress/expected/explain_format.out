@@ -37,7 +37,7 @@ CREATE TABLE boxes(id int PRIMARY KEY, apple_id int REFERENCES apples(id), locat
 NOTICE:  CREATE TABLE / PRIMARY KEY will create implicit index "boxes_pkey" for table "boxes"
 WARNING:  Referential integrity (FOREIGN KEY) constraints are not supported in Greenplum Database, will not be enforced.
 WARNING:  Referential integrity (FOREIGN KEY) constraints are not supported in Greenplum Database, will not be enforced.
--- Activate GUP that will show more memory information
+-- Activate GUC that will show more memory information
 SET explain_memory_verbosity = 'summary';
 --- Check Explain Text format output
 -- explain_processing_off

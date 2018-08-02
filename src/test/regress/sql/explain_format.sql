@@ -33,7 +33,7 @@ INSERT INTO apples(id) SELECT generate_series(1, 100000);
 CREATE TABLE box_locations(id int PRIMARY KEY, address text);
 CREATE TABLE boxes(id int PRIMARY KEY, apple_id int REFERENCES apples(id), location_id int REFERENCES box_locations(id));
 
--- Activate GUP that will show more memory information
+-- Activate GUC that will show more memory information
 SET explain_memory_verbosity = 'summary';
 
 --- Check Explain Text format output

@@ -1387,7 +1387,7 @@ gpexplain_formatMemory(char *outbuf, int bufsize, double bytes)
 #ifdef USE_ASSERT_CHECKING
 	int			nchars_written =
 #endif							/* USE_ASSERT_CHECKING */
-	snprintf(outbuf, bufsize, "%.0fK bytes", floor((bytes + 1023.0) / 1024.0));
+	snprintf(outbuf, bufsize, "%.0fK bytes", kb(bytes);
 
 	Assert(nchars_written < bufsize &&
 		   "CDBEXPLAIN:  size of char buffer is smaller than the required number of chars");
@@ -2098,7 +2098,7 @@ gpexplain_formatSlicesOutput(struct GPExplain_ShowStatCtx *showstatctx,
 
                 if (ss->peakmemused.imax >= 0)
                 {
-					gpexplain_formatSeg(segbuf, sizeof(segbuf), ss->peakmemused.imax, 999);
+                    gpexplain_formatSeg(segbuf, sizeof(segbuf), ss->peakmemused.imax, 999);
                 }
                 else if (slice &&
                          slice->gangSize > 0)
@@ -2184,7 +2184,7 @@ gpexplain_formatSlicesOutput(struct GPExplain_ShowStatCtx *showstatctx,
                 {
                 	kilobytes = cdbexplain_agg_avg(&ss->memory_accounting_global_peak);
                 	workers = ss->memory_accounting_global_peak.vcnt;
-                	kilobytes = floor((kilobytes + 1023.0) / 1024.0);
+                	kilobytes = kb(kilobytes);
 					gpexplain_formatMemory(avgbuf, sizeof(avgbuf), kilobytes);
 					gpexplain_formatSeg(segbuf, sizeof(segbuf), ss->memory_accounting_global_peak.imax, ss->nworker);
                 	appendStringInfo(es->str,
@@ -2204,7 +2204,7 @@ gpexplain_formatSlicesOutput(struct GPExplain_ShowStatCtx *showstatctx,
                 }
             }
 
-            kilobytes = floor((kilobytes + 1023.0) / 1024.0);
+            kilobytes = kb(kilobytes);
             total_memory_across_slices += (kilobytes * workers);
 
             /* Vmem reserved by QEs */
