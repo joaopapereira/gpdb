@@ -173,3 +173,38 @@ SELECT count(*)
 FROM mpp25537_facttable1 ft, mpp25537_dimdate dt, mpp25537_dimtabl1 dt1
 WHERE ft.wk_id = dt.wk_id
 AND ft.id = dt1.id;
+
+-- Do not push down any implied predicates to the Left Outer Join
+DROP TABLE IF EXISTS member;
+DROP TABLE IF EXISTS member_group;
+DROP TABLE IF EXISTS member_subgroup;
+DROP TABLE IF EXISTS region;
+
+CREATE TABLE member(member_id int NOT NULL, group_id int NOT NULL) DISTRIBUTED BY(member_id);
+CREATE TABLE member_group(group_id int NOT NULL) DISTRIBUTED BY(group_id);
+CREATE TABLE region(region_id char(4), county_name varchar(25)) DISTRIBUTED BY(region_id);
+CREATE TABLE member_subgroup(subgroup_id int NOT NULL, group_id int NOT NULL, subgroup_name text) DISTRIBUTED RANDOMLY;
+
+INSERT INTO region SELECT i, i FROM generate_series(1, 50) i;
+INSERT INTO member_group SELECT i FROM generate_series(1, 15) i;
+INSERT INTO member SELECT i, i % 15 FROM generate_series(1, 10000) i;
+--start_ignore
+ANALYZE member;
+ANALYZE member_group;
+ANALYZE region;
+ANALYZE member_subgroup;
+--end_ignore
+EXPLAIN SELECT member.member_id 
+FROM member
+INNER JOIN member_group
+ON member.group_id = member_group.group_id
+INNER JOIN member_subgroup
+ON member_group.group_id = member_subgroup.group_id
+LEFT OUTER JOIN region
+ON (member_group.group_id IN (12,13,14,15) AND member_subgroup.subgroup_name = region.county_name);
+
+
+DROP TABLE member;
+DROP TABLE member_group;
+DROP TABLE member_subgroup;
+DROP TABLE region;
