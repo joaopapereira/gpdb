@@ -315,6 +315,7 @@ static Node *makeIsNotDistinctFromNode(Node *expr, int position);
 				columnListUnique
 
 %type <node>    table_value_select_clause
+%type <node>    Tabwhatever
 
 %type <range>	OptTempTableName
 %type <into>	into_clause create_as_target
@@ -4589,6 +4590,11 @@ opt_comma: ',' { $$ = true; }
 list_subparts: TabSubPartitionBy { $$ = $1; }
 			| list_subparts opt_comma TabSubPartitionBy
 				{
+                    if (!IsA($1, PartitionBy)){
+                        ereport(ERROR, (errmsg("bamm: %s", nodeToString($1))));
+                        yyerror("SUBPARTITION BY must be specified");
+                        yyerror("SUBPARTITION TEMPLATE found before SUBPARTITION was defined");
+                    }
 					PartitionBy *pby = (PartitionBy *)$1;
 					$$ = $1;
 
@@ -4611,11 +4617,33 @@ list_subparts: TabSubPartitionBy { $$ = $1; }
 				}
 		;
 
-TabSubPartitionBy:
-			SUBPARTITION BY 
+TabSubPartitionBy: Tabwhatever
+                   TabSubPartitionTemplate
+                            {
+                                PartitionBy *pby = (PartitionBy *)$1;
+                                $$ = $1;
+                                PartitionSpec *part = (PartitionSpec*)$2;
+
+                                if (IsA(part, PartitionSpec))
+                                {
+                                    Assert(((PartitionSpec *)part)->istemplate);
+                                    Assert(IsA(pby, PartitionBy));
+            
+                                    /* find deepesh subpart and add it there */
+                                    if (((PartitionBy *)pby)->partSpec != NULL)
+                                        yyerror("syntax error");
+            
+                                    ((PartitionBy *)pby)->partSpec = part;
+                                }
+                                else
+                                    ((PartitionBy *)pby)->subPart = part;
+                            }
+                    ;
+Tabwhatever:
+            SUBPARTITION BY 
             TabPartitionByType '(' columnList ')' 
             OptTabSubPartitionsNumber 
-				{
+                {
                         PartitionBy *n = makeNode(PartitionBy); 
                         n->partType = $3;
                         n->keys     = $5; 
@@ -4623,16 +4651,12 @@ TabSubPartitionBy:
                         n->subPart  = NULL;
                         n->partSpec = NULL;
                         n->partDepth = 0;
-						n->partQuiet = PART_VERBO_NODISTRO;
+                        n->partQuiet = PART_VERBO_NODISTRO;
                         n->location  = @3;
                         n->partDefault = NULL;
                         $$ = (Node *)n;
-				}
-			| TabSubPartitionTemplate
-				{
-					$$ = $1;
-				}
-		;
+                }
+       ;
 /* END PARTITION RULES */
 
 /*
