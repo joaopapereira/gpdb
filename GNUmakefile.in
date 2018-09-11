@@ -8,7 +8,7 @@ subdir =
 top_builddir = .
 include $(top_builddir)/src/Makefile.global
 
-$(call recurse,all install,src config gpcontrib)
+$(call recurse,all install,src config)
 
 all:
 	$(MAKE) -C contrib/xlogdump all
@@ -26,6 +26,7 @@ all:
 	$(MAKE) -C gpAux/extensions all
 	$(MAKE) -C gpAux/gpperfmon all
 	$(MAKE) -C gpAux/platform all
+	$(MAKE) -C gpcontrib all
 	+@echo "All of Greenplum Database successfully made. Ready to install."
 
 docs:
@@ -58,6 +59,7 @@ install:
 	$(MAKE) -C gpAux/extensions $@
 	$(MAKE) -C gpAux/gpperfmon $@
 	$(MAKE) -C gpAux/platform $@
+	$(MAKE) -C gpcontrib $@
 	+@echo "Greenplum Database installation complete."
 
 install-docs:
