@@ -17,3 +17,6 @@
 [submodule "gpcontrib/gpcloud/test/googletest"]
 	path = gpcontrib/gpcloud/test/googletest
 	url = https://github.com/google/googletest.git
+[submodule "gpcontrib/zstd/zstd"]
+	path = gpcontrib/zstd/zstd
+	url = https://github.com/facebook/zstd
