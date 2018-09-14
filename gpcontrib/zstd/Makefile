@@ -13,7 +13,6 @@ endif
 
 ifeq "$(with_zstd)" "yes"
 all:
-	$(MAKE) -C zstd
 
 install: all
 endif
