@@ -6,6 +6,8 @@ TARGETS=cdbbufferedread \
 	cdbsrlz \
 	cdbdistributedsnapshot
 
+CGREEN_TARGETS=cdbutil
+
 TARGETS += cdbappendonlyxlog
 
 include $(top_builddir)/src/backend/mock.mk
@@ -15,3 +17,6 @@ cdbdistributedsnapshot.t: $(MOCK_DIR)/backend/access/transam/distributedlog_mock
 cdbappendonlyxlog.t: \
 	$(MOCK_DIR)/backend/storage/file/fd_mock.o \
 	$(MOCK_DIR)/backend/access/transam/xlogutils_mock.o
+
+cdbutil.green: \
+	../cdbutil.o

@@ -14,18 +14,22 @@ $(MOCK_DIR)/%_mock.c: $(abs_top_srcdir)/src/%.c
 .SECONDARY:
 $(MOCK_DIR)/%_mock.o: $(MOCK_DIR)/%_mock.c
 
-all: $(patsubst %,%.t,$(TARGETS))
+all: $(patsubst %,%.t,$(TARGETS)) $(patsubst %,%.green,$(CGREEN_TARGETS))
 
 .PHONY:
-check: $(patsubst %,%-check,$(TARGETS))
+check: $(patsubst %,%-check,$(TARGETS)) $(patsubst %,%-cgreen-check,$(CGREEN_TARGETS))
 
 .PHONY:
 %-check: %.t
 	./$*.t
+	
+.PHONY:
+%-cgreen-check: %.green
+	LD_LIBRARY_PATH=/usr/local/lib ./$*.green
 
 .PHONY:
-clean: $(patsubst %,%-clean,$(TARGETS))
+clean: $(patsubst %,%-clean,$(TARGETS)) $(patsubst %,%-clean,$(CGREEN_TARGETS))
 
 .PHONY:
 %-clean:
-	rm -f $*.t $*_test.o
+	rm -f $*.t $*_test.o $*.green

@@ -132,6 +132,8 @@ WRAP_FUNCS=$(addprefix $(WRAP_FLAGS), \
 # The test target depends on $(OBJFILES) which would update files including mocks.
 %.t: $(OBJFILES) $(CMOCKERY_OBJS) $(MOCK_OBJS) %_test.o
 	$(CC) $(CFLAGS) $(LDFLAGS) $(call WRAP_FUNCS, $(top_srcdir)/$(subdir)/test/$*_test.c) $(call BACKEND_OBJS, $(top_srcdir)/$(subdir)/$*.o $(patsubst $(MOCK_DIR)/%_mock.o,$(top_builddir)/src/%.o, $^)) $(filter-out %/objfiles.txt, $^) $(MOCK_LIBS) -o $@
+%.green: $(OBJFILES) $(MOCK_OBJS) %_test.o
+	$(CC) $(CFLAGS) $(LDFLAGS) -L/usr/local/lib/ $(call WRAP_FUNCS, $(top_srcdir)/$(subdir)/test/$*_test.c) $(call BACKEND_OBJS, $(top_srcdir)/$(subdir)/$*.o) $(filter-out %/objfiles.txt, $^) $(MOCK_LIBS) -lcgreen -o $@
 
 # We'd like to call only src/backend, but it seems we should build src/port and
 # src/timezone before src/backend.  This is not the case when main build has finished,
