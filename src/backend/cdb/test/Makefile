@@ -22,4 +22,5 @@ cdbutil.t: \
 	$(MOCK_DIR)/backend/access/common/scankey_mock.o \
 	$(MOCK_DIR)/backend/utils/error/elog_mock.o \
 	$(MOCK_DIR)/backend/access/index/genam_mock.o \
-	../cdbutil.o
+	../cdbutil.o \
+    $(UNIT_TEST_HELPER_DIR)/elog_helper.o
