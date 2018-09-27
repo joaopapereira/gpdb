@@ -1362,7 +1362,7 @@ does_segment_exist(int16 dbid)
 	 * by switching to a different method of checking.
 	 */
 	if (!IS_QUERY_DISPATCHER())
-		elog(ERROR, "dbid_get_dbinfo() executed on execution segment");
+		elog(ERROR, "does_segment_exist() executed on execution segment");
 
 	rel = heap_open(GpSegmentConfigRelationId, AccessShareLock);
 
