@@ -2,21 +2,26 @@ subdir=src/backend/cdb
 top_builddir=../../../..
 include $(top_builddir)/src/Makefile.global
 
-TARGETS=cdbbufferedread \
+#TARGETS=cdbbufferedread \
+#	cdbsrlz \
+#	cdbdistributedsnapshot
+
+CGREEN_TARGETS=cdbutil \
+	cdbbufferedread \
 	cdbsrlz \
-	cdbdistributedsnapshot
+	cdbdistributedsnapshot \
+	cdbappendonlyxlog
 
-CGREEN_TARGETS=cdbutil
-
-TARGETS += cdbappendonlyxlog
+#TARGETS += cdbappendonlyxlog
 
 include $(top_builddir)/src/backend/mock.mk
 
-cdbdistributedsnapshot.t: $(MOCK_DIR)/backend/access/transam/distributedlog_mock.o
+cdbdistributedsnapshot.green: $(MOCK_DIR)/backend/access/transam/distributedlog_mock.o
 
-cdbappendonlyxlog.t: \
+cdbappendonlyxlog.green: \
 	$(MOCK_DIR)/backend/storage/file/fd_mock.o \
 	$(MOCK_DIR)/backend/access/transam/xlogutils_mock.o
 
 cdbutil.green: \
+	$(MOCK_DIR)/backend/utils/error/elog_mock.o \
 	../cdbutil.o
