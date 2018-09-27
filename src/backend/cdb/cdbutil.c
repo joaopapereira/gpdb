@@ -1034,6 +1034,12 @@ master_standby_dbid(void)
 	return dbid;
 }
 
+bool 
+dbid_exists(int16 dbid) {
+	elog(ERROR, "dbid_exists() executed on execution segment");
+	return false;
+}
+
 CdbComponentDatabaseInfo *
 dbid_get_dbinfo(int16 dbid)
 {
