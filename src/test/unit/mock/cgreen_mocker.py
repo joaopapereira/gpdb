@@ -147,7 +147,9 @@ class MockFile(object):
     def mock(self):
         outname = self.outname
         with open(outname, 'w') as f:
-            f.write("""/*
+            f.write("""
+#include "postgres.h"
+/*
  *
  * Auto-generated Mocking Source
  *
@@ -241,7 +243,7 @@ class FuncSignature(object):
         if body:
             return body
 
-        subscript = re.compile('\[\d*\]$')
+        subscript = re.compile('\[(\d*)\]$')
         # otherwise, general method
         buf = []
         # emit check_expected()
@@ -269,15 +271,52 @@ class FuncSignature(object):
         # Currently, local function doesn't check arguments.
         if self.is_local():
             buf = []
-
-        if special.ByValStructs.has(self.rettype):
-            ret = ('\t{rettype} *ret = ({rettype} *) mock();\n' +
-                  '\treturn *ret;').format(rettype=self.rettype)
-        elif self.rettype != 'void':
-            ret = '\treturn ({cast}) mock();'.format(cast=self.rettype)
+        print "working on: ", self.funcname
+        for arg in self.args:
+            if self.is_variadic(arg):
+                continue
+            print "looking at argument: ", arg[1]
+            if self._is_malloc_required(arg[0], arg[1]):
+                argname = arg[1]
+                multiplier = 1
+                found_array = subscript.search(argname)
+                if found_array:
+                    multiplier = found_array.group(1)
+                    argname = subscript.sub('', argname)
+                add_to_buf = """
+    void * _{argname} = malloc(sizeof({type}) * {multiplier});
+    memcpy(_{argname}, &{argname}, sizeof({type}) * {multiplier});
+""".format(type=arg[0], argname=argname, multiplier=multiplier)
+                buf.append(add_to_buf)
+        
+        return_statement = ''
+        # if special.ByValStructs.has(self.rettype):
+        #     ret = ('\t{rettype} *ret = ({rettype} *) mock(').format(rettype=self.rettype)
+        #     return_statement = '\n\treturn *ret;'
+        if self.rettype != 'void':
+            ret = '\treturn ({cast}) mock('.format(cast=self.rettype)
         else:
-            ret = '\tmock();'
+            ret = '\tmock('
+
         buf.append(ret)
+
+        add_command = False
+        
+        for arg in self.args:
+            if self.is_variadic(arg):
+                continue
+            if add_command:
+                buf.append(', ')
+            add_command = True
+            argname = arg[1]
+            argname = subscript.sub('', argname)
+            if self._is_malloc_required(arg[0], arg[1]):
+                buf.append('_{arg}'.format(arg=argname))
+            else:
+                buf.append('{arg}'.format(arg=argname))
+        
+        buf.append(');')
+        buf.append(return_statement)
         return '\n'.join(buf)
 
     def to_mock(self):
@@ -292,6 +331,15 @@ class FuncSignature(object):
 }}
 """.format(mod_ret=mod_ret, name=self.funcname, args=self.format_args(),
            body=self.make_body())
+
+    def _is_user_defined(self, type_name):
+        return type_name not in ['int', 'long', 'double']
+    def _is_malloc_required(self, type_name, argument_name):
+        array_declaration = re.search('\[\]$', argument_name)
+        print "{} === {}".format(type_name, array_declaration)
+        return not self.is_pointer_type(type_name) \
+               and self._is_user_defined(type_name) \
+               and not array_declaration
 
 def main():
     logging.basicConfig(level=logging.INFO)

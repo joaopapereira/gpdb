@@ -6,11 +6,7 @@ include $(top_builddir)/src/Makefile.global
 #	cdbsrlz \
 #	cdbdistributedsnapshot
 
-CGREEN_TARGETS=cdbutil \
-	cdbbufferedread \
-	cdbsrlz \
-	cdbdistributedsnapshot \
-	cdbappendonlyxlog
+CGREEN_TARGETS=cdbutil
 
 #TARGETS += cdbappendonlyxlog
 
@@ -24,4 +20,7 @@ cdbappendonlyxlog.green: \
 
 cdbutil.green: \
 	$(MOCK_DIR)/backend/utils/error/elog_mock.o \
+	$(MOCK_DIR)/backend/access/heap/heapam_mock.o \
+	$(MOCK_DIR)/backend/access/index/genam_mock.o \
+	$(MOCK_DIR)/backend/access/common/scankey_mock.o \
 	../cdbutil.o

@@ -1036,7 +1036,20 @@ master_standby_dbid(void)
 
 bool 
 dbid_exists(int16 dbid) {
-	elog(ERROR, "dbid_exists() executed on execution segment");
+	Relation relation;
+	ScanKeyData scankey;
+	if (!IS_QUERY_DISPATCHER())
+		elog(ERROR, "dbid_exists() executed on execution segment");
+	
+	relation = heap_open(GpSegmentConfigRelationId, AccessShareLock);
+	
+	ScanKeyInit(&scankey, 
+		Anum_gp_segment_configuration_dbid,
+		BTEqualStrategyNumber, F_INT2EQ,
+		Int16GetDatum(dbid));
+	systable_beginscan(relation, GpSegmentConfigDbidIndexId, true,
+	                   SnapshotNow, 1, &scankey);
+	
 	return false;
 }
 
