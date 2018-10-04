@@ -112,6 +112,8 @@ static Node *substitute_actual_parameters_mutator(Node *node,
 static void sql_inline_error_callback(void *arg);
 static bool contain_grouping_clause_walker(Node *node, void *context);
 
+bool gp_enable_stable_function_eval = true;
+
 /*****************************************************************************
  *		OPERATOR clause functions
  *****************************************************************************/
@@ -471,7 +473,7 @@ count_agg_clauses_walker(Node *node, AggClauseCounts *counts)
 		if (aggref->aggdistinct)
 		{
 			Node *arg;
-			
+
 			counts->numDistinctAggs++;
 
 			/* we checked this in parse analysis already, but better safe than sorry. */
@@ -479,7 +481,7 @@ count_agg_clauses_walker(Node *node, AggClauseCounts *counts)
 				ereport(ERROR,
 						(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
 						 errmsg("DISTINCT is supported only for single-argument aggregates")));
-				
+
 			arg = (Node*)linitial(aggref->args);
 			if ( !list_member(counts->dqaArgs, arg) )
 				counts->dqaArgs = lappend(counts->dqaArgs, arg);
@@ -537,7 +539,7 @@ count_agg_clauses_walker(Node *node, AggClauseCounts *counts)
 															aggtranstype,
 															false);
 			pfree(declaredArgTypes);
-			
+
 			counts->missing_prelimfunc = true; /* CDB: Disable 2P aggregation */
 		}
 
@@ -1995,7 +1997,7 @@ eval_const_expressions_mutator(Node *node,
 			{
 				/* OK to substitute parameter value? */
 				if (context->estimate || (prm->pflags & PARAM_FLAG_CONST) ||
-					context->glob)
+					(context->glob && gp_enable_stable_function_eval))
 				{
 					/*
 					 * Return a Const representing the param value.  Must copy
@@ -2101,7 +2103,7 @@ eval_const_expressions_mutator(Node *node,
 		 * to this extent.
 		 */
 		set_opfuncid(expr);
-		
+
 		/*
 		 * CDB: don't optimize divide, because we might hit a divide by zero in
 		 * an expression that won't necessarily get executed later.  2006-01-09
@@ -2910,7 +2912,7 @@ eval_const_expressions_mutator(Node *node,
 		newbtest->booltesttype = btest->booltesttype;
 		return (Node *) newbtest;
 	}
-	
+
 	/* prevent recursion into sublinks */
 	if (IsA(node, SubLink) && !context->recurse_sublink_testexpr)
 	{
@@ -3447,7 +3449,8 @@ evaluate_function(Oid funcid, Oid result_type, int32 result_typmod, List *args,
 		 /* okay */ ;
 	else if (context->estimate && funcform->provolatile == PROVOLATILE_STABLE)
 		 /* okay */ ;
-	else if (context->glob && funcform->provolatile == PROVOLATILE_STABLE)
+	else if (context->glob && funcform->provolatile == PROVOLATILE_STABLE
+			 && gp_enable_stable_function_eval)
 	{
 		 /* okay, but we cannot reuse this plan */
 		context->glob->oneoffPlan = true;
@@ -4055,7 +4058,7 @@ expression_tree_mutator(Node *node,
 			{
 				AggOrder	*aggorder = (AggOrder *)node;
 				AggOrder	*newnode;
-				
+
 				FLATCOPY(newnode, aggorder, AggOrder);
 				MUTATE(newnode->sortTargets, aggorder->sortTargets, List *);
 				MUTATE(newnode->sortClause, aggorder->sortClause, List *);
@@ -4111,7 +4114,7 @@ expression_tree_mutator(Node *node,
 			{
 				WindowFrame	*frame = (WindowFrame *) node;
 				WindowFrame *newnode;
-				
+
 				FLATCOPY(newnode, frame, WindowFrame);
 				MUTATE(newnode->trail, frame->trail, WindowFrameEdge *);
 				MUTATE(newnode->lead, frame->lead, WindowFrameEdge *);
@@ -4122,7 +4125,7 @@ expression_tree_mutator(Node *node,
 			{
 				WindowFrameEdge	*edge = (WindowFrameEdge *) node;
 				WindowFrameEdge *newnode;
-				
+
 				FLATCOPY(newnode, edge, WindowFrameEdge);
 				MUTATE(newnode->val, edge->val, Node *);
 				return (Node *) newnode;
@@ -4170,16 +4173,16 @@ expression_tree_mutator(Node *node,
 			{
 				GroupClause *groupcl = (GroupClause *) node;
 				GroupClause *newnode;
-				
+
 				FLATCOPY(newnode, groupcl, GroupClause);
-				
+
 				return (Node *) newnode;
 			}
 		case T_GroupingClause:
 			{
 				GroupingClause *grpingcl = (GroupingClause *) node;
 				GroupingClause *newnode;
-				
+
 				FLATCOPY(newnode, grpingcl, GroupingClause);
 				MUTATE(newnode->groupsets, grpingcl->groupsets, List *);
 				return (Node *)newnode;
