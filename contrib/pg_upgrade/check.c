@@ -192,13 +192,20 @@ check_new_cluster(void)
 		pg_log(PG_FATAL,
 			   "Old and new cluster install users have different values for pg_authid.oid.\n");
 
-	/*
-	 * We only allow the install user in the new cluster because other defined
-	 * users might match users defined in the old cluster and generate an
-	 * error during pg_dump restore.
-	 */
-	if (new_cluster.role_count != 1)
-		pg_log(PG_FATAL, "Only the install user can be defined in the new cluster.\n");
+    /*
+ * We only allow the install user in the new cluster because other defined
+ * users might match users defined in the old cluster and generate an
+ * error during pg_dump restore.
+ *
+ * However, in Greenplum, if we are upgrading a segment, the QD's users are
+ *
+ *  place via other means(either from sql or data) so we might very well have other users.  Hence we skip this
+ *  check for a SEGMENT.
+ */
+    if (user_opts.segment_mode == DISPATCHER)
+        if (new_cluster.role_count != 1)
+            pg_log(PG_FATAL, "Only the install user can be defined in the new cluster.\n");
+
 
 	check_for_prepared_transactions(&new_cluster);
 }
