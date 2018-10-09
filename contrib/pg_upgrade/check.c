@@ -202,7 +202,7 @@ check_new_cluster(void)
  *  place via other means(either from sql or data) so we might very well have other users.  Hence we skip this
  *  check for a SEGMENT.
  */
-    if (user_opts.segment_mode == DISPATCHER)
+    //if (user_opts.segment_mode == DISPATCHER)
         if (new_cluster.role_count != 1)
             pg_log(PG_FATAL, "Only the install user can be defined in the new cluster.\n");
 
